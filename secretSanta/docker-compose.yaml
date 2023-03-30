@@ -1,0 +1,30 @@
+version: "2"
+services:
+  postgresDB:
+    image: postgres:15.1-alpine
+    container_name: ${DB_CONTAINER}
+    ports:
+      - ${DB_PORT}:5432
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - ./secretsanta_data:/var/lib/postgresql/data
+      - ./init-db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  secretSanta:
+    image: secretsanta:latest
+    build:
+      context: .
+    container_name: app
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgresDB
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_CONTAINER=${DB_CONTAINER}
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
